@@ -1,0 +1,11 @@
+Simple Launcher
+Retroarch
+LD_LIBRARY_PATH=/usr/local/lib HOME=/root /root/retroarch/retroarch
+Quit launcher
+killall simple-launcher && echo "Press Fn + Select + Start to restart Simple Launcher" >> /dev/tty1
+Sleep
+systemctl suspend
+Reboot
+systemctl reboot -f
+Poweroff
+systemctl poweroff
