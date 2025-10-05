@@ -29,7 +29,7 @@
 #include "font.h"
 #include "keyboard.h"
 
-#if defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP)
+#if defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP)
 #include "keymon.h"
 #endif
 
@@ -283,7 +283,7 @@ static void xzoom(const Arg *);
 #include "config.h"
 
 SDL_Surface *screen;
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 SDL_Surface *screen2;
 #endif
 char preload_libname[PATH_MAX + 17];
@@ -518,7 +518,7 @@ void sdlshutdown(void)
 			SDL_KillThread(thread);
 		if (xw.win)
 			SDL_FreeSurface(xw.win);
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 		if (screen2)
 			SDL_FreeSurface(screen2);
 #endif
@@ -583,7 +583,7 @@ void sdlinit(void)
 	xw.w = initial_width;
 	xw.h = initial_height;
 
-#if defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(UPSCALE)
+#if defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(UPSCALE)
 	if (!(screen = SDL_SetVideoMode(640, 480, 16, SDL_HWSURFACE)))
 	{
 #elif defined(TRIMUISP)
@@ -603,7 +603,7 @@ void sdlinit(void)
 		fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 	xw.win = SDL_CreateRGBSurface(SDL_SWSURFACE, xw.w, xw.h, 16, 0xF800, 0x7E0, 0x1F, 0);  // console screen
 	screen2 = SDL_CreateRGBSurface(SDL_SWSURFACE, xw.w, xw.h, 16, 0xF800, 0x7E0, 0x1F, 0); // for keyboardMix
 #else
@@ -744,7 +744,7 @@ void rotate320x240_rw32(void *__restrict src, void *__restrict dst)
 		}
 	}
 }
-#elif defined(UPSCALE) || defined(R36S_SDL12COMPAT)
+#elif defined(UPSCALE) || defined(SDL12COMPAT)
 // upscale 320x240x16 -> 640x480x16
 void upscale(uint32_t *restrict src, uint32_t *restrict dst)
 {
@@ -822,7 +822,7 @@ void xflip(void)
 	if (xw.win == NULL)
 		return;
 		// printf("flip\n");
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 	if (high_res)
 		memcpy(screen2->pixels, xw.win->pixels, 640 * 480 * 2); // copy for keyboardMix
 	else
@@ -834,7 +834,7 @@ void xflip(void)
 	upscale4x3(screen2->pixels, screen->pixels);
 #elif defined(MIYOOMINI)
 	upscale_and_rotate(screen2->pixels, screen->pixels);
-#elif defined(UPSCALE) || defined(R36S_SDL12COMPAT)
+#elif defined(UPSCALE) || defined(SDL12COMPAT)
 	upscale(screen2->pixels, screen->pixels);
 #else
 	rotate320x240_rw32(screen2->pixels, screen->pixels);
@@ -3254,7 +3254,7 @@ void cresize(int width, int height)
 	row = (xw.h - 2 * borderpx) / xw.ch;
 
 	printf("set videomode %dx%d\n", xw.w, xw.h);
-#if defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(UPSCALE)
+#if defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(UPSCALE)
 	if (!(screen = SDL_SetVideoMode(640, 480, 16, SDL_HWSURFACE)))
 	{
 #elif defined(TRIMUISP)
@@ -3275,7 +3275,7 @@ void cresize(int width, int height)
 	}
 	if (xw.win)
 		SDL_FreeSurface(xw.win);
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 	xw.win = SDL_CreateRGBSurface(SDL_SWSURFACE, xw.w, xw.h, 16, 0xF800, 0x7E0, 0x1F, 0); // console screen
 	if (screen2)
 		SDL_FreeSurface(screen2);
@@ -3351,7 +3351,7 @@ int ttythread(void *unused)
 
 void run(void)
 {
-#if defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP)
+#if defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP)
 	int res = open_adc_bnt_input();
 	if (res != 0)
 	{
@@ -3420,7 +3420,7 @@ int main(int argc, char *argv[])
 	xw.fw = xw.fh = xw.fx = xw.fy = 0;
 	xw.isfixed = false;
 
-#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(R36S_SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
+#if defined(MIYOOMINI) || defined(TRIMUISMART) || defined(RG35XXPLUS) || defined(SDL12COMPAT) || defined(TRIMUISP) || defined(UPSCALE)
 	char *high_res_env = getenv("HIGH_RES");
 	if (high_res_env)
 	{

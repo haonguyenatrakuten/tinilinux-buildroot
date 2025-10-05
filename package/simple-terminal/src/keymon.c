@@ -82,6 +82,8 @@ void open_gpio_keys_polled()
 					if (!strcmp(v6, "Deeplay-keys") || !strcmp(v6, "ANBERNIC-keys"))
 #elif defined(R36S_SDL12COMPAT)
 					if (!strcmp(v6, "GO-Super Gamepad"))
+#elif defined(RGB30_SDL12COMPAT)
+					if (!strcmp(v6, "gpio-keys-control"))
 #elif defined(TRIMUISP)
 					if (!strcmp(v6, "TRIMUI Player1"))
 #endif
@@ -102,18 +104,28 @@ void open_gpio_keys_polled()
 
 int keep_going = 1;
 int input_var_xx = 0;
-int event_code = 0;
-int event_value = 0;
 int key_state;
 int input_var_9 = 0;
 int input_var_10 = 0;
 int input_var_17 = 0;
 
-void process_events(int ev_code, int ev_value)
+void process_events(int ev_code, int ev_value, int ev_type)
 {
-	// printf("process_events: ev_code=%d, ev_value=%d\n", ev_code, ev_value);
 	int scancode = ev_code;
 	int sym = ev_code;
+	if (ev_type != 1 && ev_type != 3)
+	{
+		return;
+	}
+#if defined(SDL12COMPAT)
+	// ignore joysticks
+	if (ev_code == 0 || ev_code == 1 || ev_code == 3 || ev_code == 4)
+	{
+		return;
+	}
+#endif
+	// printf("process_events: ev_code=%d, ev_value=%d, ev_type=%d\n", ev_code, ev_value, ev_type);
+
 
 	// DPAD: -1=no change,1=pressed,0=released
 	if (ev_code == RAW_YAXIS)
@@ -142,13 +154,6 @@ void process_events(int ev_code, int ev_value)
 			sym = RAW_RIGHT;
 		}
 	}
-#if defined(R36S_SDL12COMPAT)
-	// ignore joysticks
-	else if (ev_code == 0 || ev_code == 1 || ev_code == 3 || ev_code == 4)
-	{
-		return;
-	}
-#endif
 	else
 	{
 		// A/B/X/Y
@@ -226,11 +231,7 @@ void *read_adc2key_thread(void *dummy)
 					}
 					else
 					{
-						if (input_ev.type != 1 && input_ev.type != 3)
-							continue;
-						event_code = input_ev.code;
-						event_value = input_ev.value;
-						process_events(event_code, input_ev.value);
+						process_events(input_ev.code, input_ev.value, input_ev.type);
 					}
 				}
 				else
@@ -239,10 +240,11 @@ void *read_adc2key_thread(void *dummy)
 					rd = read(polldata[1].fd, &input_ev, sizeof(input_ev));
 					if (rd < 0)
 					{
-						printf("read powerkey error ");
+						printf("read event_0_fd error ");
 					}
 					else
 					{
+						process_events(input_ev.code, input_ev.value, input_ev.type);
 						// handle various power shortcuts here
 						//  if (input_ev.type == 1) {
 						//    if (input_ev.value == 0) {
@@ -273,21 +275,17 @@ int open_adc_bnt_input()
 		printf("open_gpio_keys_polled error\n");  // rg35xxplus: /dev/input/event1, r36s: /dev/input/event2, trimuisp: /dev/input/event2
 		return -1;
 	}
+#if defined(SDL12COMPAT)
+	event_0_fd = open("/dev/input/event3", 0);
+#else
 	event_0_fd = open("/dev/input/event0", 0);
+#endif
 	if (event_0_fd < 0)
 	{
 		printf("Open %s error\n", "/dev/input/event0");
 		close(gpio_keys_polled_fd);
 		return -1;
 	}
-	// TODO: r36s read /dev/input/event3 (volume keys)
-	// event_3_fd = open("/dev/input/event3", 0);
-	// if (event_3_fd < 0)
-	// {
-	// 	printf("Open %s error\n", "/dev/input/event3");
-	// 	close(gpio_keys_polled_fd);
-	// 	return -1;
-	// }
 	if (pthread_create(&adc_thread, 0, read_adc2key_thread, 0))
 	{
 		printf("pthread_create error\n");

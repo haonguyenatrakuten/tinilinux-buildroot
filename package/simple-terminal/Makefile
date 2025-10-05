@@ -11,6 +11,8 @@ else ifeq ($(UNION_PLATFORM),upscale)
 include makefiles/config-generic-linux-upscale.mk
 else ifeq ($(UNION_PLATFORM),r36s-sdl12compat)
 include makefiles/config-r36s-sdl12compat.mk
+else ifeq ($(UNION_PLATFORM),rgb30-sdl12compat)
+include makefiles/config-rgb30-sdl12compat.mk
 endif
 
 SRC = $(wildcard src/*.c)
