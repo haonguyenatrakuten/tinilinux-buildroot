@@ -8,7 +8,7 @@ if [ -e /dev/mmcblk1p3 ]; then
 
     # Format it as exfat.
     # parted /dev/mmcblk1 unit MiB print >> /dev/tty1 2>&1
-    mkfs.exfat -n EASYROM /dev/mmcblk1p3 >> /dev/tty1 2>&1
+    mkfs.exfat -n ROMS /dev/mmcblk1p3 >> /dev/tty1 2>&1
     if [ $? -ne 0 ]; then
         echo "mkfs.exfat /dev/mmcblk1p3 failed" >> /dev/tty1
         exit 1

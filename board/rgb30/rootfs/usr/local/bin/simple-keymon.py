@@ -30,8 +30,8 @@ class Joypad:
     b = 305
 
     fn = 708
-    select = 704
-    start = 705
+    select = 314
+    start = 315
 
 def runcmd(cmd, *args, **kw):
     print(f">>> {cmd}")
@@ -46,13 +46,13 @@ def brightness(direction):
         f.write(f"{cur}")
 
 def volume(direction):
-    result = subprocess.run("amixer get Playback | awk -F'[][]' '/Left:/ { print $2 }' | sed 's/%//'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    result = subprocess.run("amixer get -c 1 Master | awk -F'[][]' '/Left:/ { print $2 }' | sed 's/%//'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     print(result)
     if result.returncode == 0:
         cur = int(result.stdout)
         adj = 10
         cur = max(0, min(cur + adj * direction, 100))
-        re = subprocess.run(f"amixer set Playback {cur}%", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        re = subprocess.run(f"amixer set -c 1 Master {cur}%", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         print(re)
 
 async def handle_event(device):
@@ -60,25 +60,25 @@ async def handle_event(device):
     # event.value is 1 for press, 0 for release
     # event.type is 1 for button, 3 for axis
     async for event in device.async_read_loop():
-        if device.name == "GO-Super Gamepad":
+        if device.name == "gpio-keys-control":
             keys = joypadInput.active_keys()
-            if Joypad.fn in keys:
-                if Joypad.select in keys:
-                    if event.code == Joypad.start and event.value == 1:
-                        #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
-                        runcmd("systemctl restart simple-init\n", shell=True)
+
+            if Joypad.select in keys:
                 if event.code == Joypad.start and event.value == 1:
-                    runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
-                if event.code == Joypad.up and event.value == 1:
-                    brightness(1)
-                if event.code == Joypad.down and event.value == 1:
-                    brightness(-1)
-        elif device.name == "odroidgo3-keys":
+                    #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
+                    runcmd("systemctl restart simple-init\n", shell=True)
+            if event.code == Joypad.start and event.value == 1:
+                runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
+            if event.code == Joypad.up and event.value == 1:
+                brightness(1)
+            if event.code == Joypad.down and event.value == 1:
+                brightness(-1)
+        elif device.name == "gpio-keys-vol":
             if event.code == 115 and event.value == 1:
                 volume(1)
             if event.code == 114 and event.value == 1:
                 volume(-1)
-        elif device.name == "rk8xx_pwrkey":
+        elif device.name == "rk805 pwrkey":
             if event.code == 116 and event.value == 1:
                 print("Power key pressed")
                 # runcmd("systemctl suspend", shell=True)

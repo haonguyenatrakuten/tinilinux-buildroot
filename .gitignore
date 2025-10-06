@@ -14,5 +14,4 @@
 *~
 *.pyc
 
-
-board/rgb30/rootfs_overlay_systemd/roms.tar.xz
+board/rgb30/rootfs/roms.tar.xz

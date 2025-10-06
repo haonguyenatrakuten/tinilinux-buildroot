@@ -71,7 +71,7 @@
 
 #define BATTERY_CAPACITY_FILE "/sys/class/power_supply/rk817-battery/capacity"
 #define BRIGHTNESS_FILE "/sys/devices/platform/backlight/backlight/brightness"
-#define VOLUME_COMMAND "amixer get Playback | awk -F'[][]' '/Left:/ { print $2 }'"
+#define VOLUME_COMMAND "amixer get -c 1 Master | awk -F'[][]' '/Left:/ { print $2 }'"
 
 #define CREDIT "Simple Launcher " VERSION " (RGB30) | "
 #endif
