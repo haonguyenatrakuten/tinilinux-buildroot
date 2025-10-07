@@ -1,4 +1,7 @@
 #!/bin/sh
+depmod -a
+modprobe rocknix-singleadc-joypad
+
 if [ -e /dev/mmcblk1p3 ]; then
     # /dev/mmcblk1p3 already created.
     if grep -qs '/dev/mmcblk1p3' /proc/mounts;

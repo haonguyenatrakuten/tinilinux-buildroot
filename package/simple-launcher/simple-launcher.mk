@@ -9,7 +9,7 @@ SIMPLE_LAUNCHER_SITE = package/simple-launcher
 SIMPLE_LAUNCHER_SITE_METHOD = local# Other methods like git,wget,scp,file etc. are also available.
 
 define SIMPLE_LAUNCHER_BUILD_CMDS
-    $(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)
+    $(MAKE) UNION_PLATFORM=rgb30 CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)
 endef
 
 define SIMPLE_LAUNCHER_INSTALL_TARGET_CMDS

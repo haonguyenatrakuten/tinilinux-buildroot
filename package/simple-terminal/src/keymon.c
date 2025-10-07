@@ -83,7 +83,7 @@ void open_gpio_keys_polled()
 #elif defined(R36S_SDL12COMPAT)
 					if (!strcmp(v6, "GO-Super Gamepad"))
 #elif defined(RGB30_SDL12COMPAT)
-					if (!strcmp(v6, "gpio-keys-control"))
+					if (!strcmp(v6, "retrogame_joypad"))
 #elif defined(TRIMUISP)
 					if (!strcmp(v6, "TRIMUI Player1"))
 #endif
@@ -276,7 +276,7 @@ int open_adc_bnt_input()
 		return -1;
 	}
 #if defined(SDL12COMPAT)
-	event_0_fd = open("/dev/input/event3", 0);
+	event_0_fd = open("/dev/input/event1", 0);
 #else
 	event_0_fd = open("/dev/input/event0", 0);
 #endif

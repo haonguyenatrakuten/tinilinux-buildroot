@@ -6,7 +6,7 @@ import subprocess
 import time
 
 joypadInput = evdev.InputDevice("/dev/input/event2")
-volumeInput = evdev.InputDevice("/dev/input/event3")
+volumeInput = evdev.InputDevice("/dev/input/event1")
 powerKeyInput = evdev.InputDevice("/dev/input/event0")
 
 brightness_path = "/sys/devices/platform/backlight/backlight/backlight/brightness"
@@ -60,19 +60,20 @@ async def handle_event(device):
     # event.value is 1 for press, 0 for release
     # event.type is 1 for button, 3 for axis
     async for event in device.async_read_loop():
-        if device.name == "gpio-keys-control":
+        if device.name == "retrogame_joypad":
             keys = joypadInput.active_keys()
 
             if Joypad.select in keys:
+                if Joypad.b in keys:
+                    if event.code == Joypad.start and event.value == 1:
+                        #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
+                        runcmd("systemctl restart simple-init\n", shell=True)
                 if event.code == Joypad.start and event.value == 1:
-                    #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
-                    runcmd("systemctl restart simple-init\n", shell=True)
-            if event.code == Joypad.start and event.value == 1:
-                runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
-            if event.code == Joypad.up and event.value == 1:
-                brightness(1)
-            if event.code == Joypad.down and event.value == 1:
-                brightness(-1)
+                    runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
+                if event.code == Joypad.up and event.value == 1:
+                    brightness(1)
+                if event.code == Joypad.down and event.value == 1:
+                    brightness(-1)
         elif device.name == "gpio-keys-vol":
             if event.code == 115 and event.value == 1:
                 volume(1)

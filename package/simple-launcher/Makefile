@@ -4,6 +4,8 @@ ifeq ($(UNION_PLATFORM),rg35xxplus)
 include makefiles/config-rg35xxplus.mk
 else ifeq ($(UNION_PLATFORM),r36s)
 include makefiles/config-r36s.mk
+else ifeq ($(UNION_PLATFORM),rgb30)
+include makefiles/config-rgb30.mk
 else ifeq ($(UNION_PLATFORM),trimuisp)
 include makefiles/config-trimuisp.mk
 endif

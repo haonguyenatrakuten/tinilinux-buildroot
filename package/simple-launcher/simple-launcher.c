@@ -62,15 +62,15 @@
 
 #else
 // RGB30:  Up:544, Down:545, Left:546, Right:547, A:305, B:304, X:307, Y:308, L1:310, R1:311, L2:312, R2:313, Select:314, Start:315, L3:317, R3:318
-#define BTN_A 305
-#define BTN_B 304
-#define BTN_UP 544
-#define BTN_DOWN 545
-#define BTN_LEFT 546
-#define BTN_RIGHT 547
+#define BTN_A 1
+#define BTN_B 0
+#define BTN_UP 13
+#define BTN_DOWN 14
+#define BTN_LEFT 15
+#define BTN_RIGHT 16
 
 #define BATTERY_CAPACITY_FILE "/sys/class/power_supply/rk817-battery/capacity"
-#define BRIGHTNESS_FILE "/sys/devices/platform/backlight/backlight/brightness"
+#define BRIGHTNESS_FILE "/sys/devices/platform/backlight/backlight/backlight/brightness"
 #define VOLUME_COMMAND "amixer get -c 1 Master | awk -F'[][]' '/Left:/ { print $2 }'"
 
 #define CREDIT "Simple Launcher " VERSION " (RGB30) | "
@@ -306,7 +306,7 @@ void executeShellScript(const char *script)
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	joystick = SDL_JoystickOpen(0);
-#if defined(TRIMUISP)
+#if defined(TRIMUISP) || defined(RGB30)
     SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 #endif
 }
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 	strcat(commandFilePath, COMMANDS_FILE);
 
 	renderer = SDL_CreateRenderer(window, -1, 0);
-#if defined(TRIMUISP)
+#if defined(TRIMUISP) || defined(RGB30)
     SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 #endif
 	xsFont = TTF_OpenFont(fontPath, 16);
