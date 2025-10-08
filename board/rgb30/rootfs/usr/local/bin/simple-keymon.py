@@ -26,8 +26,8 @@ class Joypad:
 
     x = 307
     y = 308
-    a = 304
-    b = 305
+    a = 305
+    b = 304
 
     fn = 708
     select = 314

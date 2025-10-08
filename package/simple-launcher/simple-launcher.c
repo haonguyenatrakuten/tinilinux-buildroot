@@ -15,6 +15,10 @@
 
 #if defined(RG35XXP)
 // RG35XXP: A:0, B:1, X:2, Y:3, L1:4, R1:5, L2:9, R2:10, Select:6, Start:7, Fn:8/11, Up Down Left Right: SDL_JOYHATMOTION
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define ITEMS_PER_PAGE 8
+
 #define BTN_A 0
 #define BTN_B 1
 #define BTN_UP 4 // use L1 because UP is SDL_JOYHATMOTION
@@ -31,6 +35,10 @@
 
 #elif defined(TRIMUISP)
 // TRIMUISP: A:0, B:1, X:2, Y:3, L1:4, R1:5, L2:9, R2:10, Select:6, Start:7, Fn:8/11, Up Down Left Right: SDL_JOYHATMOTION
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define ITEMS_PER_PAGE 8
+
 #define BTN_A 1
 #define BTN_B 0
 #define BTN_UP 4 // use L1 because UP is SDL_JOYHATMOTION
@@ -47,6 +55,10 @@
 
 #elif defined(R36S)
 // R36S:  Up:8, Down:9, Left:10, Right:11, A:1, B:0, X:2, Y:3, L1:4, R1:5, L2:6, R2:7, L3:14, R3:15, Select:12, Start:13, Fn:16
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define ITEMS_PER_PAGE 8
+
 #define BTN_A 1
 #define BTN_B 0
 #define BTN_UP 8
@@ -62,6 +74,10 @@
 
 #else
 // RGB30:  Up:544, Down:545, Left:546, Right:547, A:305, B:304, X:307, Y:308, L1:310, R1:311, L2:312, R2:313, Select:314, Start:315, L3:317, R3:318
+#define SCREEN_WIDTH 720
+#define SCREEN_HEIGHT 720
+#define ITEMS_PER_PAGE 15
+
 #define BTN_A 1
 #define BTN_B 0
 #define BTN_UP 13
@@ -76,10 +92,6 @@
 #define CREDIT "Simple Launcher " VERSION " (RGB30) | "
 #endif
 
-
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-const int ITEMS_PER_PAGE = 8;
 const char *FONT_PATH = "./simple-launcher.ttf";
 const char *COMMANDS_FILE = "./simple-launcher-commands.txt";
 
@@ -231,7 +243,7 @@ void updateHwInfo()
 
 void updateRender(int selectedItem, SDL_Color color, SDL_Color highlightColor)
 {
-	SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255); // Set the color to gray
+	SDL_SetRenderDrawColor(renderer, 14, 14, 14, 255); // Set the color to gray
 	SDL_RenderClear(renderer);
 
 	// menu items
@@ -255,7 +267,7 @@ void updateRender(int selectedItem, SDL_Color color, SDL_Color highlightColor)
 	sprintf(pagesDisplayString, "Page %d / %d", selectedPage + 1, totalPages);
 	SDL_Surface *pagesSurface = TTF_RenderText_Blended(xsFont, pagesDisplayString, color);
 	SDL_Texture *pagesTexture = SDL_CreateTextureFromSurface(renderer, pagesSurface);
-	SDL_Rect pagesRect = { 20, 445, pagesSurface->w, pagesSurface->h };
+	SDL_Rect pagesRect = { 20, SCREEN_HEIGHT - pagesSurface->h - 10, pagesSurface->w, pagesSurface->h };
 	SDL_RenderCopy(renderer, pagesTexture, NULL, &pagesRect);
 	SDL_FreeSurface(pagesSurface);
 	SDL_DestroyTexture(pagesTexture);
@@ -270,14 +282,14 @@ void updateRender(int selectedItem, SDL_Color color, SDL_Color highlightColor)
 	// battery
 	SDL_Surface *batterySurface = TTF_RenderText_Blended(sFont, batteryCapacityDisplayString, color);
 	SDL_Texture *batteryTexture = SDL_CreateTextureFromSurface(renderer, batterySurface);
-	SDL_Rect batteryRect = { 530, 5, batterySurface->w, batterySurface->h };
+	SDL_Rect batteryRect = { SCREEN_WIDTH - batterySurface->w - 10, 5, batterySurface->w, batterySurface->h };
 	SDL_RenderCopy(renderer, batteryTexture, NULL, &batteryRect);
 	SDL_FreeSurface(batterySurface);
 	SDL_DestroyTexture(batteryTexture);
 	// Credit
 	SDL_Surface *creditSurface = TTF_RenderText_Blended(xsFont, creditDisplayString, color);
 	SDL_Texture *creditTexture = SDL_CreateTextureFromSurface(renderer, creditSurface);
-	SDL_Rect creditRect = { 180, 445, creditSurface->w, creditSurface->h };
+	SDL_Rect creditRect = { SCREEN_WIDTH - creditSurface->w - 10, SCREEN_HEIGHT - pagesSurface->h - 10, creditSurface->w, creditSurface->h };
 	SDL_RenderCopy(renderer, creditTexture, NULL, &creditRect);
 	SDL_FreeSurface(creditSurface);
 	SDL_DestroyTexture(creditTexture);
@@ -359,11 +371,17 @@ int main(int argc, char *argv[])
 
 	loadCommands(commandFilePath);
 
-	SDL_Event event;
 	int running = 1;
-	int eventSkipped = 0;
 	int suspend = 0;
 	int selectedItem = 0;
+
+	int buttonUpHeld = 0;
+	int buttonDownHeld = 0;
+	Uint32 lastScrollTime = 0;
+	const Uint32 SCROLL_DELAY = 150; // milliseconds between auto-scroll
+
+	Uint32 lastHwUpdate = 0;
+	const Uint32 HW_UPDATE_INTERVAL = 2000; // 2000 ms = 2 seconds
 
 	updateHwInfo();
 
@@ -371,16 +389,15 @@ int main(int argc, char *argv[])
 
 	// main loop
 	while (running) {
-		// while (SDL_PollEvent(&event))
-		if (SDL_WaitEvent(&event) != 0) {
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+		// if (SDL_WaitEvent(&event) != 0) {
+			if (event.type == SDL_JOYAXISMOTION || event.type == SDL_MOUSEMOTION || event.type == SDL_WINDOWEVENT) {
+				continue;
+			}
 #if defined(DEBUG)
 			printf("Event type: %d\n", event.type);
 #endif
-			if (event.type == SDL_JOYAXISMOTION || event.type == SDL_MOUSEMOTION) {
-				eventSkipped = 1;
-				continue;
-			}
-			eventSkipped = 0;
 
 			switch (event.type) {
 			case SDL_QUIT:
@@ -468,12 +485,6 @@ int main(int argc, char *argv[])
 				break;
 #endif
 			case SDL_JOYBUTTONDOWN:
-				SDL_JoystickUpdate();
-				if (SDL_JoystickGetButton(joystick, 16)) { // Fn button is being pressed down
-					SDL_Delay(200);
-					updateHwInfo();
-					break;
-				}
 #if defined(DEBUG)
 				printf("Key pressed: %d\n", event.jbutton.button);
 #endif
@@ -485,16 +496,20 @@ int main(int argc, char *argv[])
 					selectedItem = 0;
 					break;
 				case BTN_UP:
-					if (selectedItem > 0)
-						selectedItem--;
-					else
-						selectedItem = numCommands - 1;
+					// if (selectedItem > 0)
+					// 	selectedItem--;
+					// else
+					// 	selectedItem = numCommands - 1;
+					buttonUpHeld = SDL_JoystickGetButton(joystick, BTN_UP);
+					buttonDownHeld = SDL_JoystickGetButton(joystick, BTN_DOWN);
 					break;
 				case BTN_DOWN:
-					if (selectedItem < numCommands - 1)
-						selectedItem++;
-					else
-						selectedItem = 0;
+					// if (selectedItem < numCommands - 1)
+					// 	selectedItem++;
+					// else
+					// 	selectedItem = 0;
+					buttonUpHeld = SDL_JoystickGetButton(joystick, BTN_UP);
+					buttonDownHeld = SDL_JoystickGetButton(joystick, BTN_DOWN);
 					break;
 				case BTN_LEFT:
 					selectedItem = MAX(0, selectedItem - ITEMS_PER_PAGE);
@@ -503,17 +518,46 @@ int main(int argc, char *argv[])
 					selectedItem = MIN(selectedItem + ITEMS_PER_PAGE, numCommands - 1);
 					break;
 				}
+
+				break;
+			case SDL_JOYBUTTONUP:
+
+				buttonUpHeld = SDL_JoystickGetButton(joystick, BTN_UP);
+				buttonDownHeld = SDL_JoystickGetButton(joystick, BTN_DOWN);
+
+				break;
+
+			default:
+				continue;
 			}
 		}
 
-		if (!eventSkipped) {
-			updateRender(selectedItem, color, highlightColor);
-			SDL_Delay(10);
-			// FIXME: This is a workaround to prevent delay in updating the screen
-			updateRender(selectedItem, color, highlightColor);
-			SDL_Delay(10);
-			updateRender(selectedItem, color, highlightColor);
+		// Handle auto-scroll when button is held
+		Uint32 now = SDL_GetTicks();
+		if (buttonUpHeld && now - lastScrollTime > SCROLL_DELAY) {
+			if (selectedItem > 0)
+				selectedItem--;
+			else
+				selectedItem = numCommands - 1;
+			lastScrollTime = now;
+		} 
+		if (buttonDownHeld && now - lastScrollTime > SCROLL_DELAY) {
+			if (selectedItem < numCommands - 1)
+				selectedItem++;
+			else
+				selectedItem = 0;
+			lastScrollTime = now;
 		}
+		
+		// Update hardware info every 2 seconds
+		if (now - lastHwUpdate >= HW_UPDATE_INTERVAL) {
+			updateHwInfo();
+			lastHwUpdate = now;
+		}
+		
+		// Update render
+		updateRender(selectedItem, color, highlightColor);
+		SDL_Delay(16); // ~60 FPS
 	}
 
 	free(commands);
