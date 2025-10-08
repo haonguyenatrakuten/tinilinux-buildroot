@@ -34,7 +34,7 @@ if [ -e /dev/mmcblk1p3 ]; then
     echo "Formatting /dev/mmcblk1p3 done." >> /dev/tty1
     sleep 3
 else
-    # Create exfat partition
+    # Create a new primary partition 3 (exfat) starting at sector 2232320 and using the rest of the disk
     # parted /dev/mmcblk1 mkpart primary ext4 2232320s 100% >> /dev/tty1 2>&1
     echo -e "n\np\n3\n2232320\n\nw\n" | fdisk /dev/mmcblk1 >> /dev/tty1 2>&1
     sleep 3
