@@ -1,0 +1,5 @@
+--- a/camera/camera_driver.c
++++ b/camera/camera_driver.c
+@@ -58,1 +58,1 @@
+-#ifdef HAVE_PIPEWIRE_STABLE
++#if defined(HAVE_PIPEWIRE) && defined(HAVE_PIPEWIRE_STABLE)

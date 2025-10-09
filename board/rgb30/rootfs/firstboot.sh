@@ -19,9 +19,10 @@ if [ -e /dev/mmcblk1p3 ]; then
     sleep 5
 
     # Mount exfat partition to /roms
-    rm -rf /roms
-    mkdir -p /roms && mount -t exfat -o umask=0000,iocharset=utf8,noatime /dev/mmcblk1p3 /roms
+    rm -rf /roms && mkdir -p /roms
     echo "/dev/mmcblk1p3 /roms exfat umask=0000,iocharset=utf8,noatime 0 0" >> /etc/fstab
+    systemctl daemon-reload
+    mount -a
     mount | grep /roms
 
     # Popluating /roms

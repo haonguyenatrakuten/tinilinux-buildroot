@@ -285,8 +285,6 @@ comment "Themes"
 endmenu
 
 menu "Games"
-	source "package/simple-launcher/Config.in"
-	source "package/simple-terminal/Config.in"
 	source "package/ascii-invaders/Config.in"
 	source "package/chocolate-doom/Config.in"
 	source "package/doom-wad/Config.in"
@@ -367,7 +365,6 @@ comment "Graphic libraries"
 	source "package/sdl_net/Config.in"
 	source "package/sdl_sound/Config.in"
 	source "package/sdl_ttf/Config.in"
-	source "package/sdl12_compat/Config.in"
 	source "package/sdl2/Config.in"
 	source "package/sdl2_gfx/Config.in"
 	source "package/sdl2_image/Config.in"
@@ -2975,5 +2972,13 @@ menu "Text editors and viewers"
 	source "package/uemacs/Config.in"
 	source "package/vim/Config.in"
 endmenu
+
+menu "Tinilinux Packages"
+	source "package/sdl12-compat/Config.in"
+	source "package/simple-launcher/Config.in"
+	source "package/simple-terminal/Config.in"
+	source "package/retroarch/Config.in"
+endmenu
+
 
 endmenu

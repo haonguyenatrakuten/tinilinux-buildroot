@@ -1,4 +1,5 @@
 config BR2_PACKAGE_SIMPLE_LAUNCHER
     bool "simple-launcher"
+    select BR2_PACKAGE_SDL2
     help
       Simple Launcher program
