@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd board/rgb30/ROMS
-tar -Jcvf ../rootfs/roms.tar.xz .
+tar -Jcvf ../rootfs/root/roms.tar.xz .
 cd ../../..

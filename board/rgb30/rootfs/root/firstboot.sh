@@ -1,7 +1,10 @@
 #!/bin/sh
+
+# Rebuild kernel module dependency and load rocknix-singleadc-joypad.ko
 depmod -a
 modprobe rocknix-singleadc-joypad
 
+# Create, format and populate ROMS partition
 if [ -e /dev/mmcblk1p3 ]; then
     # /dev/mmcblk1p3 already created.
     if grep -qs '/dev/mmcblk1p3' /proc/mounts;
@@ -9,8 +12,7 @@ if [ -e /dev/mmcblk1p3 ]; then
         exit 0;
     fi
 
-    # Format it as exfat.
-    # parted /dev/mmcblk1 unit MiB print >> /dev/tty1 2>&1
+    # Format it as exfat
     mkfs.exfat -n ROMS /dev/mmcblk1p3 >> /dev/tty1 2>&1
     if [ $? -ne 0 ]; then
         echo "mkfs.exfat /dev/mmcblk1p3 failed" >> /dev/tty1
@@ -26,31 +28,28 @@ if [ -e /dev/mmcblk1p3 ]; then
     mount | grep /roms
 
     # Popluating /roms
-    tar -Jxvf /roms.tar.xz -C /roms --no-same-owner >> /dev/tty1 2>&1
+    tar -Jxvf /root/roms.tar.xz -C /roms --no-same-owner >> /dev/tty1 2>&1
 
     # Cleanup
-    mv /firstboot.sh /root/.firstboot-done.sh
-    rm /roms.tar.xz
+    mv /root/firstboot.sh /root/.firstboot-done.sh
+    mv /root/partition-info.sh /root/.partition-info.sh
+    rm /root/roms.tar.xz
 
     echo "Formatting /dev/mmcblk1p3 done." >> /dev/tty1
     sleep 3
 else
-    # Create a new primary partition 3 (exfat) starting at sector 2232320 and using the rest of the disk
-    # parted /dev/mmcblk1 mkpart primary ext4 2232320s 100% >> /dev/tty1 2>&1
-    echo -e "n\np\n3\n2232320\n\nw\n" | fdisk /dev/mmcblk1 >> /dev/tty1 2>&1
+    # Create a new primary partition 3 on /dev/mmcblk1 starting at sector 2232320 and using the rest of the disk
+    # equivalent parted command: parted /dev/mmcblk1 mkpart primary ext4 2232320s 100% >> /dev/tty1 2>&1
+    source /root/partition-info.sh
+    ROMS_PART_START=$((${ROOTFS_PART_END} + 1))
+    echo -e "n\np\n3\n${ROMS_PART_START}\n\nw\n" | fdisk /dev/mmcblk1 >> /dev/tty1 2>&1
     sleep 3
-    # if [ $? -ne 0 ]; then
-    #     echo "create partition /dev/mmcblk1p3 failed" >> /dev/tty1
-    #     exit 1
-    # fi
 
+    # Changes the partition type of partition 3 on /dev/mmcblk1 to type 7 (NTFS/exFAT/HPFS)
     echo -e "t\n3\n7\nw\n" | fdisk /dev/mmcblk1 >> /dev/tty1 2>&1
     sleep 3
-    # if [ $? -ne 0 ]; then
-    #     echo "update /dev/mmcblk1p3 to exFat/NTFS failed" >> /dev/tty1
-    #     exit 1
-    # fi
     
+    # Refreshes the partition table information of the device /dev/mmcblk1
     partprobe /dev/mmcblk1 >> /dev/tty1 2>&1
 
     echo "Creating /dev/mmcblk1p3 done. Rebooting..." >> /dev/tty1

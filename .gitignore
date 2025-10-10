@@ -14,4 +14,4 @@
 *~
 *.pyc
 
-board/rgb30/rootfs/roms.tar.xz
+**/roms.tar.xz
