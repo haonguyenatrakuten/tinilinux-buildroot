@@ -1,0 +1,3 @@
+config BR2_PACKAGE_RK3566_DTBO
+    bool "rk3566-dtbo"
+    select BR2_PACKAGE_HOST_DTC

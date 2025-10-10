@@ -6,7 +6,7 @@
 
 SIMPLE_TERMINAL_VERSION = 1.0
 SIMPLE_TERMINAL_SITE = package/simple-terminal
-SIMPLE_TERMINAL_SITE_METHOD = local# Other methods like git,wget,scp,file etc. are also available.
+SIMPLE_TERMINAL_SITE_METHOD = local
 
 define SIMPLE_TERMINAL_BUILD_CMDS
     $(MAKE) UNION_PLATFORM=rgb30-sdl12compat CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)

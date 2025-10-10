@@ -41,7 +41,6 @@ sync
 # Format partitions and mount
 echo "mkflashableimg: Format partitions and mount"
 DEV_LOOP=$(losetup --show --find --partscan ${OUT_IMG})
-ls -la "${DEV_LOOP}"*
 mkfs.fat -F32 -n BOOT ${DEV_LOOP}p1
 mkfs.ext4 -O ^orphan_file -L rootfs ${DEV_LOOP}p2
 
@@ -53,6 +52,8 @@ echo "mkflashableimg: Copy kernel, initrd, dtb to /mnt/BOOT"
 cp -r board/rgb30/BOOT/* /mnt/BOOT/
 cp output/images/Image /mnt/BOOT/
 cp output/build/linux-6.12.43/arch/arm64/boot/dts/rockchip/rk3566-powkiddy-rgb30.dtb /mnt/BOOT/
+mkdir -p /mnt/BOOT/overlays/ && cp output/images/rk3566-dtbo/* /mnt/BOOT/overlays/
+
 # Extract buildroot (output/images/rootfs.tar) to /mnt/rootfs
 echo "mkflashableimg: Extract buildroot (output/images/rootfs.tar) to /mnt/rootfs"
 tar -xf output/images/rootfs.tar -C /mnt/rootfs --no-same-owner
