@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Rebuild kernel module dependency and load rocknix-singleadc-joypad.ko
-depmod -a
-modprobe rocknix-singleadc-joypad
+# # Rebuild kernel module dependency and load rocknix-singleadc-joypad.ko
+# depmod -a
+# modprobe rocknix-singleadc-joypad
 
 # Create, format and populate ROMS partition
 if [ -e /dev/mmcblk1p3 ]; then

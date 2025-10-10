@@ -1,0 +1,2 @@
+config BR2_PACKAGE_ROCKNIX_JOYPAD
+	bool "rocknix-joypad"

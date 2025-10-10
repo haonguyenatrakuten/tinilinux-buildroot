@@ -2978,6 +2978,7 @@ menu "Tinilinux Packages"
 	source "package/simple-launcher/Config.in"
 	source "package/simple-terminal/Config.in"
 	source "package/retroarch/Config.in"
+	source "package/rocknix-joypad/Config.in"
 endmenu
 
 
