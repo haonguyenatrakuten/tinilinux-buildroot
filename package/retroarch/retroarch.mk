@@ -8,12 +8,13 @@ RETROARCH_VERSION = 1.21.0
 RETROARCH_SITE = https://github.com/libretro/RetroArch/releases/download/v${RETROARCH_VERSION}
 RETROARCH_SOURCE = retroarch-sourceonly-${RETROARCH_VERSION}.tar.xz
 RETROARCH_SOURCE_SUBDIR = retroarch-$(RETROARCH_VERSION)
-RETROARCH_DEPENDENCIES = host-pkgconf sdl2 alsa-lib freetype zlib ffmpeg libpng libdrm pulseaudio
+RETROARCH_DEPENDENCIES = host-pkgconf sdl2 alsa-lib freetype zlib ffmpeg libpng libdrm
 RETROARCH_INSTALL_TARGET = YES
 RETROARCH_CONF_OPTS = --prefix=$(TARGET_DIR)/usr/local \
     --disable-qt \
     --enable-alsa \
     --disable-pipewire \
+    --disable-pulse \
     --enable-udev \
     --disable-opengl1 \
     --disable-x11 \
