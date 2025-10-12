@@ -8,7 +8,7 @@ fi
 # Load partition info variables
 source board/rgb30/rootfs/root/partition-info.sh
 
-OUT_IMG=output/images/tinilinux-rgb30.img
+OUT_IMG=output.rgb30/images/tinilinux-rgb30.img
 
 rm -f ${OUT_IMG}
 
@@ -22,7 +22,7 @@ parted ${OUT_IMG} mktable msdos
 
 # mkflashableimg: Write the u-boot to the img (offset 64 sectors = 32KiB)
 echo "mkflashableimg: Write the u-boot to the img (offset 64 sectors = 32KiB)"
-dd if=output/images/u-boot-rockchip.bin of=${OUT_IMG} bs=512 seek=64 conv=sync,notrunc
+dd if=output.rgb30/images/u-boot-rockchip.bin of=${OUT_IMG} bs=512 seek=64 conv=sync,notrunc
 
 # mkflashableimg: Making BOOT partitions
 echo "mkflashableimg: Making BOOT partitions"
@@ -50,13 +50,13 @@ mkdir -p /mnt/rootfs && mount -t ext4 ${DEV_LOOP}p2 /mnt/rootfs
 # Copy kernel, initrd, dtb to /mnt/BOOT
 echo "mkflashableimg: Copy kernel, initrd, dtb to /mnt/BOOT"
 cp -r board/rgb30/BOOT/* /mnt/BOOT/
-cp output/images/Image /mnt/BOOT/
-cp output/build/linux-6.12.43/arch/arm64/boot/dts/rockchip/rk3566-powkiddy-rgb30.dtb /mnt/BOOT/
-mkdir -p /mnt/BOOT/overlays/ && cp output/images/rk3566-dtbo/* /mnt/BOOT/overlays/
+cp output.rgb30/images/Image /mnt/BOOT/
+cp output.rgb30/build/linux-6.12.43/arch/arm64/boot/dts/rockchip/rk3566-powkiddy-rgb30.dtb /mnt/BOOT/
+mkdir -p /mnt/BOOT/overlays/ && cp output.rgb30/images/rk3566-dtbo/* /mnt/BOOT/overlays/
 
-# Extract buildroot (output/images/rootfs.tar) to /mnt/rootfs
-echo "mkflashableimg: Extract buildroot (output/images/rootfs.tar) to /mnt/rootfs"
-tar -xf output/images/rootfs.tar -C /mnt/rootfs --no-same-owner
+# Extract buildroot (output.rgb30/images/rootfs.tar) to /mnt/rootfs
+echo "mkflashableimg: Extract buildroot (output.rgb30/images/rootfs.tar) to /mnt/rootfs"
+tar -xf output.rgb30/images/rootfs.tar -C /mnt/rootfs --no-same-owner
 sync
 
 # Unmount and Detach the img

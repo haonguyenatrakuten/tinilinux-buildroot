@@ -1,12 +1,12 @@
-# Buildroot for rgb30
+# Buildroot for Powkiddy RGB30 (RK3566 SoC)
 ## Build
 
 To build and use the buildroot stuff, do the following:
 0) run 'sudo apt-get install libncurses-dev parted dosfstools swig'
-1) run 'make rgb30_defconfig'
+1) run 'make O=output.rgb30 rgb30_defconfig && cd output.rgb30'
 2) run 'make menuconfig'
 4) run 'make -j$(nproc)'
-6) find the kernel, bootloader, root filesystem, etc. in output/images
+6) find the kernel, bootloader, root filesystem, etc. in output.rgb30/images
 7) run 'sudo board/rgb30/mk-flashable-img.sh' to make flashable img file (instruction below)
 
 ## Install
@@ -36,8 +36,8 @@ lsblk
 # Assuming your sdcard is /dev/sdb, unmount all mounted partitions of your sdcard if automount 
 sudo umount /dev/sdb*
 # Flash the img to sdcard
-sudo dd if=output/images/tinilinux-rgb30.img of=/dev/sdb bs=1M conv=fsync status=progress
-# pv output/images/tinilinux-rgb30.img | sudo dd of=/dev/sdb bs=1M conv=fsync
+sudo dd if=output.rgb30/images/tinilinux-rgb30.img of=/dev/sdb bs=1M conv=fsync status=progress
+# pv output.rgb30/images/tinilinux-rgb30.img | sudo dd of=/dev/sdb bs=1M conv=fsync
 sudo sync
 sudo udisksctl power-off -b /dev/sdb
 ```
@@ -47,7 +47,7 @@ sudo udisksctl power-off -b /dev/sdb
 ```bash
 sudo mount -t ext4 /dev/sdb /mnt/rootfs
 sudo rm -rf /mnt/rootfs/*
-sudo tar -xvf output/images/rootfs.tar -C /mnt/rootfs && sync 
+sudo tar -xvf output.rgb30/images/rootfs.tar -C /mnt/rootfs && sync 
 sudo umount /dev/sdb
 sudo eject /dev/sdb
 ```
@@ -56,7 +56,8 @@ sudo eject /dev/sdb
 Ref: https://stackoverflow.com/questions/47320800/how-to-clean-only-target-in-buildroot
 
 ```bash
-rm -rf output/target && find output/ -name ".stamp_target_installed" -delete && rm -f output/build/host-gcc-final-*/.stamp_host_installed
+cd output.rgb30
+rm -rf target && find  -name ".stamp_target_installed" -delete && rm -f build/host-gcc-final-*/.stamp_host_installed
 ```
 
 ## Appendix
