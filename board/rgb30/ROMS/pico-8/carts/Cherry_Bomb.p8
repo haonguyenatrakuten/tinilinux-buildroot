@@ -11,6 +11,8 @@ function _init()
 
   cartdata("cherrybomb")
   highscore = dget(0)
+  options=dget(1)
+  update_menuitems()
 
   version = "v2.0"
 
@@ -62,6 +64,27 @@ function _init()
   end
 end
 
+function update_menuitems()
+  menuitem(1, "music        "..onoff((options&0b10)==0), function()
+   options=options^^0b10
+   dset(1,options)
+   update_menuitems()
+  end)
+  menuitem(2, "god mode     "..onoff((options&0b1)>0), function()
+   options=options^^0b1
+   dset(1,options)
+   update_menuitems()
+  end)
+  menuitem(3, "reset highscore", function()
+    highscore=0
+    dset(0,0)
+  end)
+end
+
+function onoff(b)
+  return b==true and "on " or "off"
+end
+
 function dofade()
   fadeperc = min(fadeperc, 1)
   for c = 0, 15 do
@@ -109,7 +132,7 @@ end
 function startscreen()
   makestars()
   mode = "start"
-  music(7)
+  if (options&0b10 == 0) music(7)
 end
 
 function startgame()
@@ -720,7 +743,7 @@ function update_game()
   if lives <= 0 then
     mode = "over"
     lockout = t + 30
-    music(6)
+    if (options&0b10 == 0) music(6)
     return
   end
 
@@ -761,7 +784,9 @@ function update_start()
 
   if btnreleased then
     if btnp(4) or btnp(5) then
-      if btn(⬆️) then
+      if options&0b1 > 0 then
+        god_mode = true
+      elseif btn(⬆️) then
         god_mode = true
       else
         god_mode = false
@@ -1087,7 +1112,7 @@ function spawnwave()
   if wave < lastwave then
     sfx(28)
   else
-    music(10)
+    if (options&0b10 == 0) music(10)
   end
 
   if wave == 1 then
@@ -1200,12 +1225,12 @@ function nextwave()
   if wave > lastwave then
     mode = "win"
     lockout = t + 30
-    music(4)
+    if (options&0b10 == 0) music(4)
   else
     if wave == 1 then
-      music(0)
+      if (options&0b10 == 0) music(0)
     else
-      music(3)
+      if (options&0b10 == 0) music(3)
     end
 
     mode = "wavetext"

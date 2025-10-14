@@ -396,7 +396,12 @@ function scene(args)
           va[id] *= damp
           geom[id].transform(x[id], y[id], a[id])
 
-          if (box.overlaps(geom[id].aabb)) cmanager.update_body(id, geom[id].aabb) else remove_body(id)
+          if (box.overlaps(geom[id].aabb)) then
+            cmanager.update_body(id, geom[id].aabb)
+          else
+            live-=1
+            remove_body(id)
+          end
         end
       end
 
@@ -680,6 +685,7 @@ POLYGONS=7
 WALL_FRICTION=9999
 BODY_FRICTION=1000
 WAIT_FOR_DROP_FRAMES=15 -- 25 (old value)
+WAIT_FOR_DROP_FRAMES_EASY_MODE=5
 
 -- ball_conf indices
 RADIUS,MERGE_SCORE,BALL_MASS,COLOR,COLOR_FG,BORDER_COLOR,FILL_PATTERN,BORDER_SIZE,FACE_SPRITE_X,FACE_SPRITE_Y,FACE_SPRITE_WIDTH,FACE_SPRITE_ONLY=
@@ -714,7 +720,7 @@ function _init()
   high_score=dget(0)
   options=dget(1)
   debug, particles={}, {}
-  god_mode=false
+  easy_mode=options&0b100 > 0
   update_menuitems()
   do_intro()
   --start_game()
@@ -738,6 +744,11 @@ function update_menuitems()
    dset(1,options)
    update_menuitems()
   end)
+  menuitem(3, "easy mode    "..onoff((options&0b100)>0), function()
+    options=options^^0b100
+    dset(1,options)
+    update_menuitems()
+   end)
 end
 
 function onoff(b)
@@ -923,8 +934,8 @@ function intro_draw()
   end
   camera(0, lerp(0, 64, intro_to_start/30))
   sspr(0,64,57,10,8,10,114,20)
-  print_sc("watermelon game", 32, 9, 4, true)
-  print_sc("pico8 demake", 40, 9, 4, true)
+  print_sc("watermelon game - pico8 demake", 32, 9, 4, true)
+  print_sc("mod by haoict", 40, 9, 4, true)
   camera(0, min(0, lerp(64, -128, intro_to_start/25)))
   draw_ball(11, 64, 70+(sin(t()*0.25)*3.5))
   camera()
@@ -937,21 +948,15 @@ end
 
 function intro_update()
   -- 0:⬅️ 1:➡️ 2:⬆️ 3:⬇️ 4:❎ 5:🅾️
-  local lives=god_mode and 1000 or 10
 
   for p in all(fruit_particles) do
    p:update()
   end
   if intro_to_start==30 then
-   start_game(lives)
+   start_game()
   elseif intro_to_start>0 then
    intro_to_start+=1
   elseif btnp(🅾️) == true or btnp(❎) == true then
-    if btn(⬆️) then
-      god_mode=true
-    else
-      god_mode=false
-    end
     intro_to_start=1
     sfx(2)
   end
@@ -1014,7 +1019,7 @@ function game_draw()
 
   -- the jar
   map(0, 0, 3, 13, 11, 16)
-
+ 
   -- next ball
   map(12, 0, 94, 2, 4, 6)
   print_s("next", 102, 6, 15, 1)
@@ -1069,23 +1074,21 @@ function game_update()
    game_intro_t+=1
   end
   for id in all(ball_ids) do
-   local x,y,a = s.position(id)
+    local x,y,a = s.position(id)
 
-  -- -- old game over logic
-  --  if y > 0 then
-  --   highlight_fruit = id
-  --   do_gameover()
-  --   return
-  --  end
-
-   if y < -12 then -- 0 < y < -10.308 (ball is in the map)
-    live-=1
-    remove_ball_body(id, true)
-    if live == 0 then
-     do_gameover()
-     return
+    if easy_mode then
+      if live <= 0 then
+        do_gameover()
+        return
+      end
+    else
+      if y > 0 then
+        highlight_fruit = id
+        do_gameover()
+        return
+      end
     end
-   end
+
   end
   s.update()
 
@@ -1105,7 +1108,7 @@ function game_update()
 
   if btnp(4) and cursor_wait_timer == 0 then
     --drop da ball
-    cursor_wait_timer = WAIT_FOR_DROP_FRAMES
+    cursor_wait_timer = easy_mode and WAIT_FOR_DROP_FRAMES_EASY_MODE or WAIT_FOR_DROP_FRAMES
     add_ball_body(px,0,current_ball)
     current_ball=nil
     sfx(0)
@@ -1126,7 +1129,7 @@ function game_update()
   cursor_wait_timer = max(0, cursor_wait_timer-1)
 end
 
-function start_game(lives)
+function start_game()
   _drw,_upd=game_draw,game_update
   px, pdx, cursor_wait_timer, score, highlight_fruit, game_intro_t = 0, 0, 0, 0, nil, 0
   bag_of_balls, balls, ball_ids, to_add = add_balls_to_bag{}, {}, {}, {}
@@ -1144,11 +1147,13 @@ function start_game(lives)
     beta = 0.2, -- proportion of positional correction, default 0.2
     isteps = 10 -- solver steps, default 4
   }
+
+  local wall_thickness = easy_mode and 34 or 14
+  s.add_body{ x=-5.2, y=-6, mass=0, moi=0, rest=0.0, frict=WALL_FRICTION, verts=rectangle(2, wall_thickness) }
+  s.add_body{ x=5.2, y=-6, mass=0, moi=0, rest=0.0, frict=WALL_FRICTION, verts=rectangle(2, wall_thickness) }
   s.add_body{ x=0, y=-11.6, mass=0, moi=0, rest=0.0, frict=WALL_FRICTION, verts=rectangle(14, 2) }
-  s.add_body{ x=-5.2, y=-6, mass=0, moi=0, rest=0.0, frict=WALL_FRICTION, verts=rectangle(2, 14) }
-  s.add_body{ x=5.2, y=-6, mass=0, moi=0, rest=0.0, frict=WALL_FRICTION, verts=rectangle(2, 14) }
   
-  live=lives
+  live=easy_mode and 100 or 1
   -- test balls
   --add_ball_body(0, -1, 10)
   --add_ball_body(0, -10, 11)
