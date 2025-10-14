@@ -80,7 +80,7 @@ void open_gpio_keys_polled()
 				{
 #if defined(RG35XXPLUS)
 					if (!strcmp(v6, "Deeplay-keys") || !strcmp(v6, "ANBERNIC-keys"))
-#elif defined(RG35XXPLUS_SDL12COMPAT)
+#elif defined(H700_SDL12COMPAT)
 					if (!strcmp(v6, "H700 Gamepad"))
 #elif defined(R36S_SDL12COMPAT)
 					if (!strcmp(v6, "GO-Super Gamepad"))
@@ -279,7 +279,7 @@ int open_adc_bnt_input()
 	}
 #if defined(RGB30_SDL12COMPAT)
 	event_0_fd = open("/dev/input/event1", 0);
-#elif defined(RG35XXPLUS_SDL12COMPAT)
+#elif defined(H700_SDL12COMPAT)
 	event_0_fd = open("/dev/input/event2", 0);
 #else
 	event_0_fd = open("/dev/input/event0", 0);

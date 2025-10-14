@@ -15,3 +15,5 @@
 *.pyc
 
 **/roms.tar.xz
+
+**/*[.nes|.sfc|.gba|.gb|.gbc|.n64|.nds|.cue|.chd]
