@@ -29,6 +29,4 @@
 **/*.nds
 **/*.cue
 **/*.chd
-
-
-
+**/roms.tar.xz
