@@ -1,3 +1,5 @@
+[![Build](https://github.com/haoict/tinilinux-buildroot/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/haoict/tinilinux-buildroot/actions/workflows/build.yaml)
+
 # Tinilinux
 ## Build
 

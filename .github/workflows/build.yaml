@@ -1,0 +1,62 @@
+name: Build
+on:
+  workflow_dispatch:
+    inputs:
+      board:
+        description: 'Select board to build'
+        required: true
+        type: choice
+        options:
+          - h700
+          - h700_consoleonly
+          - rgb30
+          - rgb30_consoleonly
+      runner:
+        description: 'Select runner type'
+        required: true
+        type: choice
+        options:
+          - github-hosted_ubuntu-24.04
+          - self-hosted_ubuntu-24.04-arm
+          - self-hosted_ubuntu-25.04-arm
+
+run-name: Build for ${{ inputs.board }} on ${{ inputs.runner }}
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner == 'github-hosted_ubuntu-24.04' && 'ubuntu-24.04' || (inputs.runner == 'self-hosted_ubuntu-25.04' && fromJSON('["self-hosted","ubuntu-25.04-arm"]')) || fromJSON('["self-hosted","ubuntu-24.04-arm"]') }}
+    steps:
+      - name: Select board
+        run: |
+          if [ "${{ inputs.board }}" = "h700" ] || [ "${{ inputs.board }}" = "rgb30" ]; then
+            if [ "$(echo ${{ inputs.runner }} | cut -d'_' -f1)" = "github-hosted" ]; then
+              echo "Full build for board with display is not supported on github-hosted runners due to disk limits. Please use a self-hosted runner to build for these boards."
+              exit 1
+            fi
+          fi
+          # cut _consoleonly from input
+          echo OUTPUT_DIR=$(echo ${{ inputs.board }} | sed 's/_consoleonly//') >> $GITHUB_ENV
+          echo BOARD=${{ inputs.board }} >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Fix absolute paths in configs
+        run: |
+          set -x
+          sed -i -e "s|/home/haoict/tinilinux-buildroot|$(pwd)|" board/h700/linux.conf
+          cat board/h700/linux.conf | grep CONFIG_EXTRA_FIRMWARE_DIR
+          ls -la $(pwd)/board/h700/external-firmware
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Build
+        run: |
+          set -x
+          rm -rf output.${OUTPUT_DIR}
+          make O=output.${OUTPUT_DIR} ${BOARD}_defconfig
+          time make O=output.${OUTPUT_DIR} -j$(nproc)
+          sudo board/${OUTPUT_DIR}/mk-flashable-img.sh
+      - name: Archive build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: tinilinux-${{ env.BOARD }}.img
+          path: output.${{ env.OUTPUT_DIR }}/images/tinilinux-${{ env.OUTPUT_DIR }}.img
+          retention-days: 2
