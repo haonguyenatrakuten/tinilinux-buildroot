@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CPU_FREQ=("/sys/devices/system/cpu/cpufreq/policy0")
-GPU_FREQ=("/sys/devices/platform/fde60000.gpu/devfreq/fde60000.gpu")
+GPU_FREQ=("/sys/devices/platform/soc/1800000.gpu/devfreq/1800000.gpu")
 
 get_threads() {
   for THREAD in $(seq 1 1 $(find /sys/devices/system/cpu -name online | wc -l)) all default

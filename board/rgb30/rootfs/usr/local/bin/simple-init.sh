@@ -9,8 +9,7 @@ echo 3 > /proc/sys/kernel/printk
 # Disable console blanking
 echo -ne "\033[9;0]" > /dev/tty1
 
-# sound setup: RK3566 devices have a master volume attached to card 0 that needs to be set to 100% on startup.
-amixer -c 1 set "Master" "100%"
+amixer -c 1 set "Master" "80%"
 
 /usr/local/bin/freqfunctions.sh powersave
 

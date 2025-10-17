@@ -6,11 +6,13 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+set -euo pipefail
+
 # Load partition info variables
-source board/rgb30/rootfs/root/partition-info.sh
+BOARD=rgb30
+source board/${BOARD}/rootfs/root/partition-info.sh
 
-OUT_IMG=output.rgb30/images/tinilinux-rgb30.img
-
+OUT_IMG=output.${BOARD}/images/tinilinux-${BOARD}.img
 rm -f ${OUT_IMG}
 
 # mkflashableimg: Create an empty img file
@@ -23,7 +25,7 @@ parted ${OUT_IMG} mktable msdos
 
 # mkflashableimg: Write the u-boot to the img (offset 64 sectors = 32KiB)
 echo "mkflashableimg: Write the u-boot to the img (offset 64 sectors = 32KiB)"
-dd if=output.rgb30/images/u-boot-rockchip.bin of=${OUT_IMG} bs=512 seek=64 conv=fsync,notrunc
+dd if=output.${BOARD}/images/u-boot-rockchip.bin of=${OUT_IMG} bs=512 seek=64 conv=fsync,notrunc
 
 # mkflashableimg: Making BOOT partitions
 echo "mkflashableimg: Making BOOT partitions"
@@ -50,17 +52,21 @@ mkdir -p /mnt/rootfs && mount -t ext4 ${DEV_LOOP}p2 /mnt/rootfs
 
 # Copy kernel, initrd, dtb to /mnt/BOOT
 echo "mkflashableimg: Copy kernel, initrd, dtb to /mnt/BOOT"
-cp -r board/rgb30/BOOT/* /mnt/BOOT/
-cp output.rgb30/images/Image /mnt/BOOT/
-cp output.rgb30/images/initramfs /mnt/BOOT/
-cp -r output.rgb30/images/rockchip /mnt/BOOT/dtb
-cp output.rgb30/images/rk3566-dtbo/*.dtbo /mnt/BOOT/dtb/
+cp -r board/${BOARD}/BOOT/* /mnt/BOOT/
+cp output.${BOARD}/images/Image /mnt/BOOT/
+cp output.${BOARD}/images/initramfs /mnt/BOOT/
+cp -r output.${BOARD}/images/rockchip /mnt/BOOT/dtb
+cp output.${BOARD}/images/rk3566-dtbo/*.dtbo /mnt/BOOT/dtb/
 
-# Extract buildroot (output.rgb30/images/rootfs.tar) to /mnt/rootfs
-echo "mkflashableimg: Extract buildroot (output.rgb30/images/rootfs.tar) to /mnt/rootfs"
-tar -xf output.rgb30/images/rootfs.tar -C /mnt/rootfs --no-same-owner
+# Extract buildroot (output.${BOARD}/images/rootfs.tar) to /mnt/rootfs
+echo "mkflashableimg: Extract buildroot (output.${BOARD}/images/rootfs.tar) to /mnt/rootfs"
+tar -xf output.${BOARD}/images/rootfs.tar -C /mnt/rootfs --no-same-owner
 # Create roms.tar.xz to /root to be used in firstboot
-tar -Jcf /mnt/rootfs/root/roms.tar.xz -C board/rgb30/ROMS .
+mktempdir=$(mktemp -d)
+cp -r board/common/ROMS/ ${mktempdir}/
+if [ -d board/${BOARD}/ROMS/ ]; then cp -r board/${BOARD}/ROMS/ ${mktempdir}/; fi
+tar -Jcf /mnt/rootfs/root/roms.tar.xz -C ${mktempdir}/ROMS/ .
+rm -rf ${mktempdir}
 
 sync
 

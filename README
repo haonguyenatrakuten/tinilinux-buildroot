@@ -25,7 +25,7 @@ lsblk
 # Assuming your sdcard is /dev/sdb, unmount all mounted partitions of your sdcard if automount 
 sudo umount /dev/sdb*
 # Flash the img to sdcard
-sudo dd if=output.${BOARD}/images/tinilinux-${BOARD}.img of=/dev/sdb bs=1M conv=fsync status=progress
+sudo dd if=output.${BOARD}/images/tinilinux-${BOARD}.img of=/dev/sdb bs=4M conv=fsync status=progress
 sudo sync
 sudo udisksctl power-off -b /dev/sdb
 ```
