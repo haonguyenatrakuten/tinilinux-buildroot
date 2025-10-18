@@ -14,7 +14,9 @@ amixer -c 1 set "Master" "80%"
 /usr/local/bin/freqfunctions.sh powersave
 
 killall python3
+export PYTHONUNBUFFERED=1
 nohup /usr/bin/python3 /usr/local/bin/simple-keymon.py &
+unset PYTHONUNBUFFERED
 
 cd /usr/local/bin && /usr/local/bin/simple-launcher &
 

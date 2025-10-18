@@ -146,7 +146,7 @@
 #define RAW_Y 308
 #define RAW_START 315
 #define RAW_SELECT 314
-#define RAW_MENU 708
+#define RAW_MENU 316
 #define RAW_L1 310
 #define RAW_L2 312
 #define RAW_L3 706

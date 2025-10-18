@@ -5,13 +5,23 @@ import asyncio
 import subprocess
 import time
 
-joypadInput = evdev.InputDevice("/dev/input/event3")
-volumeInput = evdev.InputDevice("/dev/input/event2")
-powerKeyInput = evdev.InputDevice("/dev/input/event0")
+def find_device_by_name(name):
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    for device in devices:
+        if device.name == name:
+            return device
+    raise Exception(f"Input device with name '{name}' not found")
+
+joypadInput = find_device_by_name("H700 Gamepad")
+volumeInput = find_device_by_name("gpio-keys-volume")
+powerKeyInput = find_device_by_name("axp20x-pek")
+# rg35xxspLid = find_device_by_name("gpio-keys-lid")
+devices = [joypadInput, volumeInput, powerKeyInput]
 
 brightness_path = "/sys/devices/platform/backlight/backlight/backlight/brightness"
 max_brightness = int(open("/sys/devices/platform/backlight/backlight/backlight/max_brightness", "r").read())
 
+suspended = 0
 
 class Joypad:
     l1 = 310
@@ -67,7 +77,6 @@ async def handle_event(device):
             if Joypad.fn in keys:
                 if Joypad.select in keys:
                     if event.code == Joypad.start and event.value == 1:
-                        #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
                         runcmd("systemctl restart simple-init\n", shell=True)
                 if event.code == Joypad.start and event.value == 1:
                     runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
@@ -83,7 +92,12 @@ async def handle_event(device):
         elif device.name == "axp20x-pek":
             if event.code == 116 and event.value == 1:
                 print("Power key pressed")
-                # runcmd("systemctl suspend", shell=True)
+            #     global suspended
+            #     if suspended == 0:
+            #         suspended = 1
+            #         runcmd("systemctl suspend", shell=True)
+            #     else:
+            #         suspended = 0
         time.sleep(0.001)
 
 def run():

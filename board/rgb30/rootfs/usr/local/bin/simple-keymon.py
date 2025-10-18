@@ -5,13 +5,22 @@ import asyncio
 import subprocess
 import time
 
-joypadInput = evdev.InputDevice("/dev/input/event2")
-volumeInput = evdev.InputDevice("/dev/input/event1")
-powerKeyInput = evdev.InputDevice("/dev/input/event0")
+def find_device_by_name(name):
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    for device in devices:
+        if device.name == name:
+            return device
+    raise Exception(f"Input device with name '{name}' not found")
+
+joypadInput = find_device_by_name("retrogame_joypad")
+volumeInput = find_device_by_name("gpio-keys-vol")
+powerKeyInput = find_device_by_name("rk805 pwrkey")
+devices = [joypadInput, volumeInput, powerKeyInput]
 
 brightness_path = "/sys/devices/platform/backlight/backlight/backlight/brightness"
 max_brightness = int(open("/sys/devices/platform/backlight/backlight/backlight/max_brightness", "r").read())
 
+suspended = 0
 
 class Joypad:
     l1 = 310
@@ -38,12 +47,13 @@ def runcmd(cmd, *args, **kw):
     subprocess.run(cmd, *args, **kw)
 
 def brightness(direction):
-    with open(brightness_path, "r+") as f:
-        cur = int(f.read())
-        adj = 16
-        cur = max(1, min(cur + adj * direction, max_brightness))
-        f.seek(0, 0)
-        f.write(f"{cur}")
+    with open(brightness_path, "r") as f:
+        cur = int(f.read().strip())
+    adj = max_brightness * 5 / 100 # 5% of max brightness
+    cur = max(1, min(cur + adj * direction, max_brightness))
+    
+    with open(brightness_path, "w") as f:
+        f.write(f"{int(cur)}\n")
 
 def volume(direction):
     result = subprocess.run("amixer get -c 1 Master | awk -F'[][]' '/Left:/ { print $2 }' | sed 's/%//'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -66,7 +76,6 @@ async def handle_event(device):
             if Joypad.select in keys:
                 if Joypad.b in keys:
                     if event.code == Joypad.start and event.value == 1:
-                        #runcmd("if pidof simple-launcher > /dev/null; then killall simple-launcher; else cd /usr/local/bin && (LD_LIBRARY_PATH=/usr/local/lib /usr/local/bin/simple-launcher &); fi \n", shell=True)
                         runcmd("systemctl restart simple-init\n", shell=True)
                 if event.code == Joypad.start and event.value == 1:
                     runcmd("killall retroarch; killall pico8_64; killall 351Files; true\n", shell=True)
@@ -82,7 +91,12 @@ async def handle_event(device):
         elif device.name == "rk805 pwrkey":
             if event.code == 116 and event.value == 1:
                 print("Power key pressed")
-                # runcmd("systemctl suspend", shell=True)
+            #     global suspended
+            #     if suspended == 0:
+            #         suspended = 1
+            #         runcmd("systemctl suspend", shell=True)
+            #     else:
+            #         suspended = 0
         time.sleep(0.001)
 
 def run():

@@ -84,7 +84,7 @@
 
 #elif defined(H700)
 #define SCREEN_WIDTH 480
-#define SCREEN_HEIGHT 640
+#define SCREEN_HEIGHT 480
 #define ITEMS_PER_PAGE 8
 #define BATTERY_CAPACITY_FILE "/sys/class/power_supply/battery/capacity"
 #define BRIGHTNESS_FILE "/sys/devices/platform/backlight/backlight/backlight/brightness"
